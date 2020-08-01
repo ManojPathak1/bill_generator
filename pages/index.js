@@ -2,7 +2,8 @@ import Head from 'next/head';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import useLocalStorage from "../hooks/useLocalStorage";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -14,9 +15,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Home() {
-  const [previousReading, setPreviousReading] = useState(0);
-  const [currentReading, setCurrentReading] = useState(0);
-  const [amount, setAmount] = useState(null);
+  const [previousReading, setPreviousReading] = useLocalStorage("previousReading", 0);
+  const [currentReading, setCurrentReading] = useLocalStorage("currentReading", 0);
+  const [amount, setAmount] = useLocalStorage("amount", null);
   const classes = useStyles();
   const calculateBill = () => {
     const readings = currentReading - previousReading;
