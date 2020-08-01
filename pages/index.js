@@ -16,7 +16,18 @@ const useStyles = makeStyles((theme) => ({
 export default function Home() {
   const [previousReading, setPreviousReading] = useState(0);
   const [currentReading, setCurrentReading] = useState(0);
+  const [amount, setAmount] = useState(null);
   const classes = useStyles();
+  const calculateBill = () => {
+    const readings = currentReading - previousReading;
+    let amt = 0;
+    if (readings > 0 && readings <= 150) amt = readings * 5.5;
+    else if (readings > 150 && readings <= 300) amt = 150 * 5.5 + (readings - 150) * 6;
+    else if (readings > 300 && readings <= 500) amt = 150 * 5.5 + 150 * 6 + (readings - 300) * 6.5;
+    else if (readings > 500) amt = 150 * 5.5 + 150 * 6 + 200 * 6.5 + (readings - 500) * 7;
+    amt += 655;
+    setAmount(amt);
+  };
   return (
     <div className="container">
       <Head>
@@ -49,12 +60,13 @@ export default function Home() {
           value={previousReading}
           onChange={event => setPreviousReading(event.target.value)}
         />
-        <Button variant="contained" size="large" color="primary" className={classes.margin}>
+        <Button variant="contained" size="large" color="primary" className={classes.margin} onClick={calculateBill}>
           Calculate
         </Button>
         <Button size="large" className={classes.margin}>
           Reset
         </Button>
+        {amount && <h1>{amount}</h1>}
       </main>
       <style jsx>{`
         .container {
