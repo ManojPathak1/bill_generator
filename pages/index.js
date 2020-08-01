@@ -17,7 +17,9 @@ const useStyles = makeStyles((theme) => ({
 export default function Home() {
   const [previousReading, setPreviousReading] = useLocalStorage("previousReading", 0);
   const [currentReading, setCurrentReading] = useLocalStorage("currentReading", 0);
+  const [days, setDays] = useLocalStorage("days", 0);
   const [amount, setAmount] = useLocalStorage("amount", null);
+  const [averageReading, setAverageReading] = useLocalStorage("averageReading", null);
   const classes = useStyles();
   const calculateBill = () => {
     const readings = currentReading - previousReading;
@@ -28,6 +30,12 @@ export default function Home() {
     else if (readings > 500) amt = 150 * 5.5 + 150 * 6 + 200 * 6.5 + (readings - 500) * 7;
     amt += 655;
     setAmount(amt);
+    setAverageReading(readings/days);
+  };
+  const resetValue = () => {
+    setPreviousReading(0);
+    setCurrentReading(0);
+    setDays(0);
   };
   return (
     <div className="container">
@@ -37,7 +45,7 @@ export default function Home() {
       </Head>
       <main>
         <h3 className="title">
-          Welcome to Electricity Bill Generator
+          Electricity Bill Generator
         </h3>
         <TextField
           id="outlined-number"
@@ -47,6 +55,7 @@ export default function Home() {
             shrink: true,
           }}
           variant="outlined"
+          className={classes.margin}
           value={currentReading}
           onChange={event => setCurrentReading(event.target.value)}
         />
@@ -58,16 +67,30 @@ export default function Home() {
             shrink: true,
           }}
           variant="outlined"
+          className={classes.margin}
           value={previousReading}
           onChange={event => setPreviousReading(event.target.value)}
+        />
+        <TextField
+          id="outlined-number"
+          label="No. of days"
+          type="number"
+          InputLabelProps={{
+            shrink: true,
+          }}
+          variant="outlined"
+          className={classes.margin}
+          value={days}
+          onChange={event => setDays(event.target.value)}
         />
         <Button variant="contained" size="large" color="primary" className={classes.margin} onClick={calculateBill}>
           Calculate
         </Button>
-        <Button size="large" className={classes.margin}>
+        <Button size="large" className={classes.margin} onClick={resetValue}>
           Reset
         </Button>
-        {amount && <h1>{amount}</h1>}
+        {averageReading && <h1>Average Reading: {averageReading}</h1>}
+        {amount && <h1>Amount: {amount}</h1>}
       </main>
       <style jsx>{`
         .container {
@@ -123,7 +146,7 @@ export default function Home() {
         }
 
         .title {
-          margin: 0;
+          padding: 5px;
           line-height: 1.15;
           font-size: 2rem;
         }
