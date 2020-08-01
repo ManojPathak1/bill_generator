@@ -2,6 +2,7 @@ import Head from 'next/head';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
+import { useState } from 'react';
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -13,6 +14,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Home() {
+  const [previousReading, setPreviousReading] = useState(0);
+  const [currentReading, setCurrentReading] = useState(0);
   const classes = useStyles();
   return (
     <div className="container">
@@ -32,6 +35,8 @@ export default function Home() {
             shrink: true,
           }}
           variant="outlined"
+          value={currentReading}
+          onChange={event => setCurrentReading(event.target.value)}
         />
         <TextField
           id="outlined-number"
@@ -41,6 +46,8 @@ export default function Home() {
             shrink: true,
           }}
           variant="outlined"
+          value={previousReading}
+          onChange={event => setPreviousReading(event.target.value)}
         />
         <Button variant="contained" size="large" color="primary" className={classes.margin}>
           Calculate
