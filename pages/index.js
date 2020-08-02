@@ -114,6 +114,7 @@ export default function Home() {
       <Head>
         <title>Electricity Bill Generator</title>
         <link rel="icon" href="/favicon.ico" />
+        <link rel="manifest" href="/manifest.json" />
       </Head>
       <main>
         <h3 className="title">Electricity Bill Generator</h3>
