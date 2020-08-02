@@ -1,15 +1,18 @@
-import Head from 'next/head';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
-import { useState, useEffect } from 'react';
+import Head from "next/head";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+import { makeStyles, withStyles } from "@material-ui/core/styles";
+import Table from "@material-ui/core/Table";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import TableContainer from "@material-ui/core/TableContainer";
+import TableHead from "@material-ui/core/TableHead";
+import TableRow from "@material-ui/core/TableRow";
+import Paper from "@material-ui/core/Paper";
+import Card from "@material-ui/core/Card";
+import CardActions from "@material-ui/core/CardActions";
+import CardContent from "@material-ui/core/CardContent";
+import Typography from "@material-ui/core/Typography";
 import useLocalStorage from "../hooks/useLocalStorage";
 
 const useStyles = makeStyles((theme) => ({
@@ -33,26 +36,37 @@ const StyledTableCell = withStyles((theme) => ({
 
 const StyledTableRow = withStyles((theme) => ({
   root: {
-    '&:nth-of-type(odd)': {
+    "&:nth-of-type(odd)": {
       backgroundColor: theme.palette.action.hover,
     },
   },
 }))(TableRow);
 
 export default function Home() {
-  const [previousReading, setPreviousReading] = useLocalStorage("previousReading", 0);
-  const [currentReading, setCurrentReading] = useLocalStorage("currentReading", 0);
-  const [days, setDays] = useLocalStorage("days", 0);
+  const [previousReading, setPreviousReading] = useLocalStorage(
+    "previousReading",
+    0
+  );
+  const [currentReading, setCurrentReading] = useLocalStorage(
+    "currentReading",
+    0
+  );
   const [readingDate, setReadingDate] = useLocalStorage("readingDate", "");
   const [amount, setAmount] = useLocalStorage("amount", null);
-  const [averageReading, setAverageReading] = useLocalStorage("averageReading", null);
-  const [estimatedData, setEstimatedData] = useLocalStorage("estimatedData", null);
+  const [averageReading, setAverageReading] = useLocalStorage(
+    "averageReading",
+    null
+  );
+  const [estimatedData, setEstimatedData] = useLocalStorage(
+    "estimatedData",
+    null
+  );
   const classes = useStyles();
   const calculateBill = () => {
     const readings = currentReading - previousReading;
     let amt = getAmount(readings);
     setAmount(amt);
-    setAverageReading((readings/getHours(new Date()))*24);
+    setAverageReading((readings / getHours(new Date())) * 24);
     getEstimatedAmount(readings);
     console.log(getHours(new Date()));
   };
@@ -61,30 +75,63 @@ export default function Home() {
     setCurrentReading(0);
     setDays(0);
   };
-  const getAmount = readings => {
+
+  const formatDate = (date) => {
+    var monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    var day = date.getDate();
+    var monthIndex = date.getMonth();
+    var year = date.getFullYear();
+
+    return day + " " + monthNames[monthIndex] + " " + year;
+  };
+
+  const getAmount = (readings) => {
     let amt = 0;
     if (readings > 0 && readings <= 150) amt = readings * 5.5;
-    else if (readings > 150 && readings <= 300) amt = 150 * 5.5 + (readings - 150) * 6;
-    else if (readings > 300 && readings <= 500) amt = 150 * 5.5 + 150 * 6 + (readings - 300) * 6.5;
-    else if (readings > 500) amt = 150 * 5.5 + 150 * 6 + 200 * 6.5 + (readings - 500) * 7;
+    else if (readings > 150 && readings <= 300)
+      amt = 150 * 5.5 + (readings - 150) * 6;
+    else if (readings > 300 && readings <= 500)
+      amt = 150 * 5.5 + 150 * 6 + (readings - 300) * 6.5;
+    else if (readings > 500)
+      amt = 150 * 5.5 + 150 * 6 + 200 * 6.5 + (readings - 500) * 7;
     amt += 655;
     return amt;
   };
 
-  const getHours = date => {
-    let diff =(date.getTime() - new Date(readingDate).getTime()) / 1000;
-    diff /= (60 * 60);
+  const getHours = (date) => {
+    let diff = (date.getTime() - new Date(readingDate).getTime()) / 1000;
+    diff /= 60 * 60;
     return Math.abs(Math.round(diff));
   };
 
   const getEstimatedAmount = (readings) => {
     const afterDays = [28, 29, 30, 31, 32, 33];
-    const averageReading = readings/getHours(new Date());
-    const result = afterDays.map(days => {
+    const averageReading = readings / getHours(new Date());
+    const result = afterDays.map((days) => {
       const readingDateObj = new Date(readingDate);
-      const estimatedDate = new Date(readingDateObj.setDate(readingDateObj.getDate() + days));
+      const estimatedDate = new Date(
+        readingDateObj.setDate(readingDateObj.getDate() + days)
+      );
       const totalReadings = averageReading * getHours(estimatedDate);
-      return { afterDays: days, estimatedDate, amount: getAmount(totalReadings) };
+      return {
+        afterDays: days,
+        estimatedDate: formatDate(estimatedDate),
+        amount: getAmount(totalReadings),
+      };
     });
     setEstimatedData(result);
   };
@@ -95,9 +142,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <h3 className="title">
-          Electricity Bill Generator
-        </h3>
+        <h3 className="title">Electricity Bill Generator</h3>
         <TextField
           id="outlined-number"
           label="Current Reading"
@@ -108,7 +153,7 @@ export default function Home() {
           variant="outlined"
           className={classes.margin}
           value={currentReading}
-          onChange={event => setCurrentReading(event.target.value)}
+          onChange={(event) => setCurrentReading(event.target.value)}
         />
         <TextField
           id="outlined-number"
@@ -120,11 +165,11 @@ export default function Home() {
           variant="outlined"
           className={classes.margin}
           value={previousReading}
-          onChange={event => setPreviousReading(event.target.value)}
+          onChange={(event) => setPreviousReading(event.target.value)}
         />
         <TextField
           id="datetime-local"
-          label="Next appointment"
+          label="Previous Reading Date"
           type="datetime-local"
           defaultValue={readingDate}
           className={classes.margin}
@@ -132,38 +177,72 @@ export default function Home() {
           InputLabelProps={{
             shrink: true,
           }}
-          onChange={event => { setReadingDate(event.target.value); console.log(Date(event.target.value)); }}
+          onChange={(event) => {
+            setReadingDate(event.target.value);
+            console.log(Date(event.target.value));
+          }}
         />
-        <Button variant="contained" size="large" color="primary" className={classes.margin} onClick={calculateBill}>
-          Calculate
+        <Button
+          variant="contained"
+          size="large"
+          color="primary"
+          className={classes.margin}
+          onClick={calculateBill}
+        >
+          Calculate Bill
         </Button>
         <Button size="large" className={classes.margin} onClick={resetValue}>
           Reset
         </Button>
-        {averageReading && <><span>Average Reading:</span><h1>{averageReading}</h1></>}
-        {amount && <><span>Amount:</span><h1>{amount}</h1></>}
-        <TableContainer component={Paper}>
-      <Table className={classes.table} aria-label="customized table">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell>days afterDays</StyledTableCell>
-            <StyledTableCell align="right">Date&nbsp;(g)</StyledTableCell>
-            <StyledTableCell align="right">Amount&nbsp;(g)</StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {estimatedData && estimatedData.map((row) => (
-            <StyledTableRow key={row.daysAfter}>
-              <StyledTableCell component="th" scope="row">
-                {row.afterDays}
-              </StyledTableCell>
-              <StyledTableCell align="right">{String(row.estimatedDate)}</StyledTableCell>
-              <StyledTableCell align="right">{row.amount}</StyledTableCell>
-            </StyledTableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        <Card className={classes.root}>
+          <CardContent>
+            {amount && <><Typography className={classes.pos} color="textSecondary">
+              Amount
+            </Typography>
+            <Typography variant="h6" component="h4">
+            &#8377; {amount.toFixed(2)}
+            </Typography></>}
+            <Typography className={classes.pos} color="textSecondary">
+              Total Reading
+            </Typography>
+            <Typography variant="h6" component="h4">
+              {currentReading - previousReading}
+            </Typography>
+            {averageReading && <><Typography className={classes.pos} color="textSecondary">
+              Average Reading
+            </Typography>
+            <Typography variant="h6" component="h4">
+              {averageReading.toFixed(2)}
+            </Typography></>}
+          </CardContent>
+        </Card>
+        <TableContainer component={Paper} className={classes.margin}>
+          <Table className={classes.table} aria-label="customized table">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>Days after previous bill</StyledTableCell>
+                <StyledTableCell>Bill Date</StyledTableCell>
+                <StyledTableCell>Estimated Amount (&#8377;)</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {estimatedData &&
+                estimatedData.map((row) => (
+                  <StyledTableRow key={row.daysAfter}>
+                    <StyledTableCell component="th" scope="row">
+                      {row.afterDays}
+                    </StyledTableCell>
+                    <StyledTableCell align="left">
+                      {String(row.estimatedDate)}
+                    </StyledTableCell>
+                    <StyledTableCell align="right">
+                      {row.amount.toFixed(2)}
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </main>
       <style jsx>{`
         .container {
@@ -310,5 +389,5 @@ export default function Home() {
         }
       `}</style>
     </div>
-  )
+  );
 }
