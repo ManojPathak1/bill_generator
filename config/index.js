@@ -6,3 +6,4 @@ export default [
 ];
 
 export const defaultValue = 655;
+export const afterDays = [28, 29, 30, 31, 32, 33];

@@ -10,10 +10,11 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Typography from "@material-ui/core/Typography";
 import useLocalStorage from "../hooks/useLocalStorage";
+import { getAmountFromReadings, formatDate } from "../utils";
+import { afterDays } from "../config";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -61,15 +62,21 @@ export default function Home() {
     "estimatedData",
     null
   );
+  const [readings, setReadings] = useLocalStorage(
+    "readings",
+    null
+  );
   const classes = useStyles();
+
   const calculateBill = () => {
     const readings = currentReading - previousReading;
-    let amt = getAmount(readings);
+    const amt = getAmountFromReadings(readings);
     setAmount(amt);
     setAverageReading((readings / getHours(new Date())) * 24);
     getEstimatedAmount(readings);
-    console.log(getHours(new Date()));
+    setReadings(currentReading - previousReading);
   };
+
   const resetValue = () => {
     setPreviousReading(0);
     setCurrentReading(0);
@@ -79,42 +86,6 @@ export default function Home() {
     setEstimatedData(null);
   };
 
-  const formatDate = (date) => {
-    var monthNames = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-
-    var day = date.getDate();
-    var monthIndex = date.getMonth();
-    var year = date.getFullYear();
-
-    return day + " " + monthNames[monthIndex] + " " + year;
-  };
-
-  const getAmount = (readings) => {
-    let amt = 0;
-    if (readings > 0 && readings <= 150) amt = readings * 5.5;
-    else if (readings > 150 && readings <= 300)
-      amt = 150 * 5.5 + (readings - 150) * 6;
-    else if (readings > 300 && readings <= 500)
-      amt = 150 * 5.5 + 150 * 6 + (readings - 300) * 6.5;
-    else if (readings > 500)
-      amt = 150 * 5.5 + 150 * 6 + 200 * 6.5 + (readings - 500) * 7;
-    amt += 655;
-    return amt;
-  };
-
   const getHours = (date) => {
     let diff = (date.getTime() - new Date(readingDate).getTime()) / 1000;
     diff /= 60 * 60;
@@ -122,7 +93,6 @@ export default function Home() {
   };
 
   const getEstimatedAmount = (readings) => {
-    const afterDays = [28, 29, 30, 31, 32, 33];
     const averageReading = readings / getHours(new Date());
     const result = afterDays.map((days) => {
       const readingDateObj = new Date(readingDate);
@@ -133,11 +103,12 @@ export default function Home() {
       return {
         afterDays: days,
         estimatedDate: formatDate(estimatedDate),
-        amount: getAmount(totalReadings),
+        amount: getAmountFromReadings(totalReadings),
       };
     });
     setEstimatedData(result);
   };
+
   return (
     <div className="container">
       <Head>
@@ -180,10 +151,7 @@ export default function Home() {
           InputLabelProps={{
             shrink: true,
           }}
-          onChange={(event) => {
-            setReadingDate(event.target.value);
-            console.log(Date(event.target.value));
-          }}
+          onChange={(event) => setReadingDate(event.target.value)}
         />
         <Button
           variant="contained"
@@ -194,58 +162,64 @@ export default function Home() {
         >
           Calculate Bill
         </Button>
-        <Button size="large" className={classes.margin} onClick={resetValue}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          className={classes.margin}
+          onClick={resetValue}
+        >
           Reset
         </Button>
-        {amount && <Card className={classes.root}>
-          <CardContent>
-            {amount && <><Typography className={classes.pos} color="textSecondary">
-              Amount
-            </Typography>
-            <Typography variant="h6" component="h4">
-            &#8377; {amount.toFixed(2)}
-            </Typography></>}
-            <Typography className={classes.pos} color="textSecondary">
-              Total Reading
-            </Typography>
-            <Typography variant="h6" component="h4">
-              {currentReading - previousReading}
-            </Typography>
-            {averageReading && <><Typography className={classes.pos} color="textSecondary">
-              Average Reading
-            </Typography>
-            <Typography variant="h6" component="h4">
-              {averageReading.toFixed(2)}
-            </Typography></>}
-          </CardContent>
-        </Card>}
-        {estimatedData && <TableContainer component={Paper} className={classes.margin}>
-          <Table className={classes.table} aria-label="customized table">
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>Days after previous bill</StyledTableCell>
-                <StyledTableCell>Bill Date</StyledTableCell>
-                <StyledTableCell>Estimated Amount (&#8377;)</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {
-                estimatedData.map((row) => (
-                  <StyledTableRow key={row.daysAfter}>
+        {amount && averageReading && readings && (
+          <Card className={classes.root}>
+            <CardContent>
+              <Typography className={classes.pos} color="textSecondary">
+                Amount
+              </Typography>
+              <Typography variant="h6" component="h4">
+                &#8377; {amount.toFixed(2)}
+              </Typography>
+              <Typography className={classes.pos} color="textSecondary">
+                Total Reading
+              </Typography>
+              <Typography variant="h6" component="h4">
+                {readings}
+              </Typography>
+              <Typography className={classes.pos} color="textSecondary">
+                Average Reading
+              </Typography>
+              <Typography variant="h6" component="h4">
+                {averageReading.toFixed(2)}
+              </Typography>
+            </CardContent>
+          </Card>
+        )}
+        {estimatedData && (
+          <TableContainer component={Paper} className={classes.margin}>
+            <Table className={classes.table} aria-label="customized table">
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell>Days after previous bill</StyledTableCell>
+                  <StyledTableCell>Bill Date</StyledTableCell>
+                  <StyledTableCell>Estimated Amount (&#8377;)</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {estimatedData.map((row) => (
+                  <StyledTableRow key={row.afterDays}>
                     <StyledTableCell component="th" scope="row">
                       {row.afterDays}
                     </StyledTableCell>
-                    <StyledTableCell align="left">
-                      {String(row.estimatedDate)}
-                    </StyledTableCell>
+                    <StyledTableCell>{row.estimatedDate}</StyledTableCell>
                     <StyledTableCell align="right">
                       {row.amount.toFixed(2)}
                     </StyledTableCell>
                   </StyledTableRow>
                 ))}
-            </TableBody>
-          </Table>
-        </TableContainer>}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </main>
       <style jsx>{`
         .container {
@@ -256,124 +230,12 @@ export default function Home() {
           justify-content: center;
           align-items: center;
         }
-
         main {
           padding: 1rem 0;
           flex: 1;
           display: flex;
           flex-direction: column;
           align-items: center;
-        }
-
-        footer {
-          width: 100%;
-          height: 100px;
-          border-top: 1px solid #eaeaea;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer img {
-          margin-left: 0.5rem;
-        }
-
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        a {
-          color: inherit;
-          text-decoration: none;
-        }
-
-        .title a {
-          color: #0070f3;
-          text-decoration: none;
-        }
-
-        .title a:hover,
-        .title a:focus,
-        .title a:active {
-          text-decoration: underline;
-        }
-
-        .title {
-          padding: 5px;
-          line-height: 1.15;
-          font-size: 2rem;
-        }
-
-        .title,
-        .description {
-          text-align: center;
-        }
-
-        .description {
-          line-height: 1.5;
-          font-size: 1.5rem;
-        }
-
-        code {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-        }
-
-        .grid {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
-
-          max-width: 800px;
-          margin-top: 3rem;
-        }
-
-        .card {
-          margin: 1rem;
-          flex-basis: 45%;
-          padding: 1.5rem;
-          text-align: left;
-          color: inherit;
-          text-decoration: none;
-          border: 1px solid #eaeaea;
-          border-radius: 10px;
-          transition: color 0.15s ease, border-color 0.15s ease;
-        }
-
-        .card:hover,
-        .card:focus,
-        .card:active {
-          color: #0070f3;
-          border-color: #0070f3;
-        }
-
-        .card h3 {
-          margin: 0 0 1rem 0;
-          font-size: 1.5rem;
-        }
-
-        .card p {
-          margin: 0;
-          font-size: 1.25rem;
-          line-height: 1.5;
-        }
-
-        .logo {
-          height: 1em;
-        }
-
-        @media (max-width: 600px) {
-          .grid {
-            width: 100%;
-            flex-direction: column;
-          }
         }
       `}</style>
 
@@ -386,7 +248,6 @@ export default function Home() {
             Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
             sans-serif;
         }
-
         * {
           box-sizing: border-box;
         }
