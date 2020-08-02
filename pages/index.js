@@ -73,7 +73,10 @@ export default function Home() {
   const resetValue = () => {
     setPreviousReading(0);
     setCurrentReading(0);
-    setDays(0);
+    setReadingDate("");
+    setAmount(null);
+    setAverageReading(null);
+    setEstimatedData(null);
   };
 
   const formatDate = (date) => {
@@ -194,7 +197,7 @@ export default function Home() {
         <Button size="large" className={classes.margin} onClick={resetValue}>
           Reset
         </Button>
-        <Card className={classes.root}>
+        {amount && <Card className={classes.root}>
           <CardContent>
             {amount && <><Typography className={classes.pos} color="textSecondary">
               Amount
@@ -215,8 +218,8 @@ export default function Home() {
               {averageReading.toFixed(2)}
             </Typography></>}
           </CardContent>
-        </Card>
-        <TableContainer component={Paper} className={classes.margin}>
+        </Card>}
+        {estimatedData && <TableContainer component={Paper} className={classes.margin}>
           <Table className={classes.table} aria-label="customized table">
             <TableHead>
               <TableRow>
@@ -226,7 +229,7 @@ export default function Home() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {estimatedData &&
+              {
                 estimatedData.map((row) => (
                   <StyledTableRow key={row.daysAfter}>
                     <StyledTableCell component="th" scope="row">
@@ -242,7 +245,7 @@ export default function Home() {
                 ))}
             </TableBody>
           </Table>
-        </TableContainer>
+        </TableContainer>}
       </main>
       <style jsx>{`
         .container {
