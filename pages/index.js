@@ -72,7 +72,7 @@ export default function Home() {
     const readings = currentReading - previousReading;
     const amt = getAmountFromReadings(readings);
     setAmount(amt);
-    setAverageReading((readings / getHours(new Date())) * 24);
+    setAverageReading((readings / (getHours(new Date())) * 24));
     getEstimatedAmount(readings);
     setReadings(currentReading - previousReading);
   };
@@ -87,9 +87,8 @@ export default function Home() {
   };
 
   const getHours = (date) => {
-    let diff = (date.getTime() - new Date(readingDate).getTime()) / 1000;
-    diff /= 60 * 60;
-    return Math.abs(Math.round(diff));
+    const diff = (date.getTime() - new Date(readingDate).getTime()) / (60 * 60 *1000);
+    return diff;
   };
 
   const getEstimatedAmount = (readings) => {
@@ -117,7 +116,7 @@ export default function Home() {
         <link rel="manifest" href="/manifest.json" />
       </Head>
       <main>
-        <h3 className="title">Electricity Bill Generator</h3>
+        <h3 className="title">ELECTRICITY BILL GENERATOR</h3>
         <TextField
           id="outlined-number"
           label="Current Reading"
@@ -175,7 +174,7 @@ export default function Home() {
           <Card className={classes.root}>
             <CardContent>
               <Typography className={classes.pos} color="textSecondary">
-                Amount
+                Reading Amount
               </Typography>
               <Typography variant="h6" component="h4">
                 &#8377; {amount.toFixed(2)}

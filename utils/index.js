@@ -1,6 +1,19 @@
-import { defaultValue } from '../config';
+import config from '../config';
 
-export const getAmountFromReadings = (readings) => {
+export const getAmountFromReadings = readings => {
+  const arr = [];
+  config.forEach(el => {
+    const { end, amount } = el;
+    if (readings > 0 && readings >= end) arr.push({ readings: end, amount });
+    else if (readings > 0 && readings <= end) arr.push({ readings, amount });
+    readings -= end;
+  });
+  return arr.reduce((acc, value) => {
+    return acc + value.readings * value.amount;
+  }, 0);
+};
+
+export const get = (readings) => {
   let amount = 0;
   if (readings > 0 && readings <= 150) amount = readings * 5.5;
   else if (readings > 150 && readings <= 300)
@@ -9,7 +22,7 @@ export const getAmountFromReadings = (readings) => {
     amount = 150 * 5.5 + 150 * 6 + (readings - 300) * 6.5;
   else if (readings > 500)
     amount = 150 * 5.5 + 150 * 6 + 200 * 6.5 + (readings - 500) * 7;
-  amount += defaultValue;
+  // amount += defaultValue;
   return amount;
 };
 
