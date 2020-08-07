@@ -3,10 +3,10 @@ import config from '../config';
 export const getAmountFromReadings = readings => {
   const arr = [];
   config.forEach(el => {
-    const { end, amount } = el;
-    if (readings > 0 && readings >= end) arr.push({ readings: end, amount });
-    else if (readings > 0 && readings <= end) arr.push({ readings, amount });
-    readings -= end;
+    const { diff, amount } = el;
+    if (readings > 0 && readings >= diff) arr.push({ readings: diff, amount });
+    else if (readings > 0 && readings <= diff) arr.push({ readings, amount });
+    readings -= diff;
   });
   return arr.reduce((acc, value) => {
     return acc + value.readings * value.amount;
