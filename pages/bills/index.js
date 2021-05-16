@@ -20,7 +20,7 @@ const Bills = () => {
     const [amount, setAmount] = useState("");
     const classes = useStyles();
     const fetchData = () => {
-      const db = getFirestoreDB();
+        const db = getFirestoreDB();
         db.collection("paid_bills")
             .orderBy("date", "desc")
             .limit(12)
@@ -44,7 +44,7 @@ const Bills = () => {
     }, []);
 
     const onAddBill = () => {
-      const db = getFirestoreDB();
+        const db = getFirestoreDB();
         db.collection("paid_bills")
             .add({
                 date: billDate,
@@ -60,31 +60,43 @@ const Bills = () => {
     };
 
     const onClickDelete = (id) => {
-      const db = getFirestoreDB();
-      db.collection("paid_bills").doc(id).delete().then(() => {
-        fetchData();
-    }).catch((error) => {
-        console.error("Error removing document: ", error);
-    });
-    }
+        const db = getFirestoreDB();
+        db.collection("paid_bills")
+            .doc(id)
+            .delete()
+            .then(() => {
+                fetchData();
+            })
+            .catch((error) => {
+                console.error("Error removing document: ", error);
+            });
+    };
 
     const getAverage = () => {
-      const totalAmount = bills.reduce((acc, curr) => {
-        acc += curr.amount;
-        return acc;
-      }, 0);
-      console.log(totalAmount);
-      const totalBills = bills.length;
-      const average = totalAmount / totalBills;
-      return average.toFixed();
+        const totalAmount = bills.reduce((acc, curr) => {
+            acc += curr.amount;
+            return acc;
+        }, 0);
+        console.log(totalAmount);
+        const totalBills = bills.length;
+        const average = totalAmount / totalBills;
+        return average.toFixed();
     };
 
     return (
         <div>
-          <span>{getAverage()}</span>
+            <h1>{getAverage()}</h1>
+            <Link href="/">Go to Home</Link>
             <ul>
                 {bills.map((bill) => {
-                    return <div>{bill.date} - {bill.amount} <button onClick={() => onClickDelete(bill.id)}>Delete</button></div>;
+                    return (
+                        <div>
+                            {bill.date} - {bill.amount}{" "}
+                            <button onClick={() => onClickDelete(bill.id)}>
+                                Delete
+                            </button>
+                        </div>
+                    );
                 })}
             </ul>
             <div>
