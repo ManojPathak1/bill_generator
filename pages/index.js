@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Link from"next/link";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
@@ -170,6 +171,7 @@ export default function Home() {
         >
           Reset
         </Button>
+        <Link href="/bills">Go to Bills</Link>
         {amount && averageReading && readings && (
           <Card className={classes.root}>
             <CardContent>

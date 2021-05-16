@@ -46,3 +46,4 @@ export const formatDate = (date) => {
   const year = date.getFullYear();
   return `${day} ${monthNames[monthIndex]} ${year}`;
 };
+
